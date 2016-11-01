@@ -1,0 +1,23 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "cc:22:3d:e3:ce:36",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+
+  "description": "My sample config file",
+
+  "platforms": [ 
+    {
+      "platform": "isy-maker",
+      "name": "isymaker",
+      "host": "10.0.0.3",
+      "username": "admin",
+      "password": "admin"
+    }
+  ],
+
+  "accessories": [
+  ]
+}

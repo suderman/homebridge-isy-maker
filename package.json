@@ -1,0 +1,26 @@
+{
+  "name": "homebridge-isy-maker",
+  "version": "0.0.1",
+  "description": "",
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin",
+    "isy",
+    "homekit",
+    "insteon",
+    "Siri"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/suderman/homebridge-isy-maker.git"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "debug": "*",
+    "faye-websocket": "^0.11.0",
+    "request": "^2.76.0"
+  }
+}
