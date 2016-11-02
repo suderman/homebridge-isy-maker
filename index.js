@@ -1,7 +1,6 @@
 // DEBUG=* homebridge -D -I -P ./homebridge-isy-maker
 
-var http = require('http'),
-    request = require('request'),
+var request = require('request'),
     WebSocket = require("faye-websocket"),
     Accessory, Service, Characteristic, UUIDGen, platform;
 
@@ -25,14 +24,13 @@ function ISYMaker(log, config, api) {
   this.username = config.username;
   this.password = config.password;
   this.url = `http://${config.username}:${config.password}@${config.host}`;
+  this.wsUrl = `ws://${config.host}/rest/subscribe`;
   this.prefix = (config.prefix==undefined) ? 'hb' : config.prefix;
 
-  // Accessories are parsed from ISY variables
   this.variables = new Map();
   this.variableNames = new Map();
   this.accessories = new Map();
 
-  // Dynamic platform
   if (api) {
     this.api = api;
     this.api.on('didFinishLaunching', this.run.bind(this));
@@ -58,7 +56,7 @@ ISYMaker.prototype.run = function() {
     setTimeout(() => {
 
       // Process new variables found on the ISY, creating new accessories or adding to existing
-      var characteristics = newVariables.map(variable => this.addAccessory(variable));
+      var characteristics = newVariables.map(variable => this.addCharacteristic(variable));
 
       // Wait a couple seconds
       setTimeout(() => {
@@ -80,7 +78,7 @@ ISYMaker.prototype.run = function() {
 ISYMaker.prototype.configureAccessory = function(cachedAccessory) {
   this.log('Cached Accessory', cachedAccessory.displayName);
 
-  // Get cached accessory's service`
+  // Get cached accessory's service
   var service = cachedAccessory.getService(Service[cachedAccessory.context.serviceType]);
 
   // Collect array of characteristics
@@ -108,45 +106,19 @@ ISYMaker.prototype.configureAccessory = function(cachedAccessory) {
   this.accessories.set(cachedAccessory.UUID, cachedAccessory);
 }
 
-ISYMaker.prototype.addAccessory = function(variable) {
-  var UUID = variable.UUID, 
-      serviceType = variable.serviceType,
+ISYMaker.prototype.addCharacteristic = function(variable) {
+  var serviceType = variable.serviceType,
       characteristicType = variable.characteristicType;
 
   // First save this variable into the map
   this.variables.set(variable.ID, variable);
   this.variableNames.set(`${variable.isyType}-${variable.isyID}`, variable.isyName);
 
-  // Attempt to find existing accessory in this variable
-  var accessory = this.accessories.get(UUID);
+  // Attempt to find existing accessory in this variable, or create a new accessory
+  var accessory = this.accessories.get(variable.UUID) || this.addAccessory(variable);
 
-  // If it doesn't exist, we'll create it 
-  if (!accessory) {
-
-    // Get or create accessory from variable
-    this.log('Add new accessory', variable.displayName);
-    accessory = new Accessory(variable.displayName, UUID);
-
-    // Set main service type
-    accessory.addService(Service[serviceType], accessory.displayName);
-
-    // Initiate context
-    accessory.context.variables = [variable];
-    accessory.context.serviceType = serviceType;
-
-    // Set up identification details
-    this.setAccessoryInformation(accessory);
-
-    // Add it to the list and register to the platform
-    this.accessories.set(UUID, accessory);
-    this.api.registerPlatformAccessories("homebridge-isy-maker", "isy-maker", [accessory]);
-
-  // If the accessory in this variable already exists, add it to the context
-  } else {
-  
-    // Add variable to accessory's context
-    accessory.context.variables.push(variable);
-  }
+  // Add variable to accessory's context
+  accessory.context.variables.push(variable);
 
   // Get or create this variable's characteristic
   var service = accessory.getService(Service[serviceType]);
@@ -158,6 +130,34 @@ ISYMaker.prototype.addAccessory = function(variable) {
 
   // Return this variable's characterstic to be collected
   return characteristic;
+}
+
+
+ISYMaker.prototype.addAccessory = function(variable) {
+  var UUID = variable.UUID, 
+      displayName = variable.displayName,
+      serviceType = variable.serviceType;
+
+  // Get or create accessory from variable
+  this.log('Add new accessory', displayName);
+  accessory = new Accessory(displayName, UUID);
+
+  // Set main service type
+  accessory.addService(Service[serviceType], accessory.displayName);
+
+  // Initiate context
+  accessory.context.variables = [];
+  accessory.context.serviceType = serviceType;
+
+  // Set up identification details
+  this.setAccessoryInformation(accessory);
+
+  // Add it to the list and register to the platform
+  this.accessories.set(UUID, accessory);
+  this.api.registerPlatformAccessories("homebridge-isy-maker", "isy-maker", [accessory]);
+
+  // Return this new accessory
+  return accessory;
 }
 
 
@@ -245,15 +245,12 @@ ISYMaker.prototype.removeCharacteristic = function(variable) {
 
 ISYMaker.prototype.initializeWebSocket = function() {
 
-  this.webSocket = new WebSocket.Client(
-    `ws://${this.host}/rest/subscribe`, 
-    ["ISYSUB"],
-    {
-      headers: {
-        "Origin": "com.universal-devices.websockets.isy",
-        "Authorization": 'Basic ' + new Buffer(`${this.username}:${this.password}`).toString('base64')			
-      }
-    });
+  this.webSocket = new WebSocket.Client(this.wsUrl, ["ISYSUB"], {
+    headers: {
+      "Origin": "com.universal-devices.websockets.isy",
+      "Authorization": 'Basic ' + new Buffer(`${this.username}:${this.password}`).toString('base64')			
+    }
+  });
 
   // this.lastActivity = new Date();
 
@@ -351,7 +348,6 @@ ISYMakerVariable.prototype.getValue = function(callback) {
   var url = `${platform.url}/rest/vars/get/${this.isyType}/${this.isyID}`;
   request(url, function(error, response, body) {
     var value = Number.parseInt(body.split(/<val>|<\/val>/)[1], 10);
-    // console.log(url, value);
     callback(null, value);
   });
 }
