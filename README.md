@@ -2,7 +2,7 @@
 
 Homebridge platform plugin to make virtual accessories as defined by [ISY-994i](https://www.universal-devices.com/residential/isy994i-series/) variables.   
 
-![](https://media.giphy.com/media/3oz8xWHxeXd6wWeczC/source.gif)
+![](http://i.giphy.com/3oz8xWHxeXd6wWeczC.gif)
 
 This plugin is intended to compliment the excellent [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) plugin by [rodtoll](https://github.com/rodtoll). While [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) helps HomeKit understand your ISY-controlled Insteon & Z-Wave devices, there are situations where it'd be desirable to trigger an ISY program or Network Resource as well. 
 
