@@ -2,7 +2,7 @@
 
 Homebridge platform plugin to make virtual accessories as defined by [ISY-994i](https://www.universal-devices.com/residential/isy994i-series/) variables.   
 
-![](http://i.giphy.com/3oz8xWHxeXd6wWeczC.gif)
+[![](http://i.giphy.com/3o7TKDKsVFfMjsbo0o.gif)](https://media.giphy.com/media/3oz8xWHxeXd6wWeczC/source.gif)
 
 This plugin is intended to compliment the excellent [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) plugin by [rodtoll](https://github.com/rodtoll). While [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) helps HomeKit understand your ISY-controlled Insteon & Z-Wave devices, there are situations where it'd be desirable to trigger an ISY program or Network Resource as well. 
 
@@ -66,13 +66,13 @@ This isn't an exhaustive list of HomeKit accessories (that list would be found [
   `hb.My_Television.Switch.On`
 
 - #### Outlet
-  `hb.My_Heater.Outlet.On` 
-  `hb.My_Heater.Outlet.OutletInUse` 
+  `hb.My_Heater.Outlet.On`  
+  `hb.My_Heater.Outlet.OutletInUse`  
 
 - #### Fan
-  `hb.My_Fan.On` 
-  `hb.My_Fan.RotationDirection` 
-  `hb.My_Fan.RotationSpeed` 
+  `hb.My_Fan.On`  
+  `hb.My_Fan.RotationDirection`  
+  `hb.My_Fan.RotationSpeed`  
 
 ### Lightbulbs
 
@@ -104,26 +104,26 @@ This isn't an exhaustive list of HomeKit accessories (that list would be found [
   `hb.My_Thermometer.TemperatureSensor.CurrentTemperature`
 
 - #### Thermostat
-  `hb.My_Thermostat.TemperatureSensor.CurrentTemperature`
-  `hb.My_Thermostat.TemperatureSensor.TargetTemperature`
-  `hb.My_Thermostat.TemperatureSensor.CurrentHeatingCoolingState`
-  `hb.My_Thermostat.TemperatureSensor.TargetHeatingCoolingState`
-  `hb.My_Thermostat.TemperatureSensor.TemperatureDisplayUnits`
+  `hb.My_Thermostat.TemperatureSensor.CurrentTemperature`  
+  `hb.My_Thermostat.TemperatureSensor.TargetTemperature`  
+  `hb.My_Thermostat.TemperatureSensor.CurrentHeatingCoolingState`  
+  `hb.My_Thermostat.TemperatureSensor.TargetHeatingCoolingState`  
+  `hb.My_Thermostat.TemperatureSensor.TemperatureDisplayUnits`  
 
 ### Audio
 
 - #### Speaker
-  `hb.My_Stereo.Speaker.Mute`
+  `hb.My_Stereo.Speaker.Mute`  
   `hb.My_Stereo.Speaker.Volume`
 
 - #### Microphone
-  `hb.My_Mic.Microphone.Mute`
+  `hb.My_Mic.Microphone.Mute`  
   `hb.My_Mic.Microphone.Volume`
 
 ## Minor bug note   
 
 _tldr: restart the Homebridge process after making ISY variable name changes to fix realtime updates._
 
-There is a small bug I haven't been able to squash, and I would appreciate if anyone can point out the fix. Normally, realtime updates work great: the Home app is open, you change an ISY variable's value externally, and the associated accessory updates instantly. However, this realtime updating seems to get lost whenever variable name changes are detected and characteristics/accessories are added/removed. The new characterstic will receive realtime updates, but all the other accessories won't. Normal on-demand updates still work fine---when the Home app is closed and reopened, all values are updated. Also, the websocket continues to receive messages, but updating the characteristic with the new value does nothing. 
+There is a small bug I haven't been able to squash, and I would appreciate if anyone can point out the fix. Normally, realtime updates work great: the Home app is open, you change an ISY variable's value externally, and the associated accessory updates instantly. However, this realtime updating seems to get lost whenever variable name changes are detected and characteristics/accessories are added/removed. The new characterstic will receive realtime updates, but all the other accessories won't. Normal on-demand updates still work fine: when the Home app is closed and reopened, all values are updated. Also, the websocket continues to receive messages, but updating the characteristic with the new value does nothing. 
 
 And, stranger: this bug causes realtime updates to _other_ homebridge accessories to be broken too! Which makes me wonder if it's a deeper problem? Everything works fine again after restarting the Homebridge process, so it's not hard to work-around, but I'd like to avoid that requirement if possible.
