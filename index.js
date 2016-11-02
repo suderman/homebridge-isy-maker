@@ -26,7 +26,6 @@ function ISYMaker(log, config, api) {
   this.password = config.password;
   this.url = `http://${config.username}:${config.password}@${config.host}`;
   this.prefix = (config.prefix==undefined) ? 'hb' : config.prefix;
-  this.refresh = (config.refresh==undefined) ? (10 * 1000) : (config.refresh * 1000); // Number of seconds between checking variable name changes
 
   // Accessories are parsed from ISY variables
   this.variables = new Map();
@@ -48,7 +47,7 @@ function ISYMaker(log, config, api) {
 ISYMaker.prototype.run = function() {
 
   // Watch for variable name changes
-  ISYMakerVariable.watch(this.variables, this.refresh, (newVariables = [], oldVariables = []) => {
+  ISYMakerVariable.watch(this.variables, (newVariables = [], oldVariables = []) => {
     // platform.log('OLD: ', oldVariables)
     // platform.log('NEW: ', newVariables)
 
@@ -56,15 +55,20 @@ ISYMaker.prototype.run = function() {
     oldVariables.forEach(variable => this.removeCharacteristic(variable));
 
     // Wait a couple seconds (required, or all accessories stop responding without a restart)
-    // setTimeout(() => {
+    setTimeout(() => {
 
       // Process new variables found on the ISY, creating new accessories or adding to existing
       var characteristics = newVariables.map(variable => this.addAccessory(variable));
 
-      // Add the set/get events to any new characteristics
-      this.configureCharacteristics(characteristics);
+      // Wait a couple seconds
+      setTimeout(() => {
 
-    // }, 2000);
+        // Add the set/get events to any new characteristics
+        this.configureCharacteristics(characteristics);
+
+      }, 2000);
+
+    }, 2000);
   });
 
   // Also open websocket for real-time value changes from ISY
@@ -74,7 +78,7 @@ ISYMaker.prototype.run = function() {
 
 // Function invoked when homebridge tries to restore cached accessory
 ISYMaker.prototype.configureAccessory = function(cachedAccessory) {
-  this.log('cachedAccessory', cachedAccessory);
+  this.log('Cached Accessory', cachedAccessory.displayName);
 
   // Get cached accessory's service`
   var service = cachedAccessory.getService(Service[cachedAccessory.context.serviceType]);
@@ -142,9 +146,6 @@ ISYMaker.prototype.addAccessory = function(variable) {
   
     // Add variable to accessory's context
     accessory.context.variables.push(variable);
-
-    // Save change
-    this.api.updatePlatformAccessories([accessory]);
   }
 
   // Get or create this variable's characteristic
@@ -162,7 +163,7 @@ ISYMaker.prototype.addAccessory = function(variable) {
 
 // Configure service and required characterstics
 ISYMaker.prototype.configureCharacteristics = function(characteristics = []) {
-  this.log('configureCharacteristics', characteristics);
+  // this.log('configureCharacteristics', characteristics);
 
   characteristics.forEach(characteristic => {
     var variable = this.variables.get(characteristic.ID); 
@@ -233,12 +234,8 @@ ISYMaker.prototype.removeCharacteristic = function(variable) {
   this.variables.delete(variable.ID);
   this.variableNames.delete(`${variable.isyType}-${variable.isyID}`);
   
-  // If this accessory has other variables, update the cache copy
-  if (accessory.context.variables.length) {
-    this.api.updatePlatformAccessories([accessory]);
-
   // If this was the last variable, unregister the accessory
-  } else {
+  if (!accessory.context.variables.length) {
     this.api.unregisterPlatformAccessories("homebridge-isy-maker", "isy-maker", [accessory]);
     this.accessories.delete(accessory.UUID);
   }
@@ -265,25 +262,28 @@ ISYMaker.prototype.initializeWebSocket = function() {
 
     var isyType, isyID, isyValue = false;
     [, isyType, isyID, isyValue ] = event.data.split(/type="|" id="|"><val>|<\/val>/);
-    this.log('WS: ', isyType, isyID, isyValue);
+    this.log('WebSocket: ', isyType, isyID, isyValue);
 
-    this.log('variable by type and id: ', `${isyType}-${isyID}`);
-    this.log(this.variableNames.get(`${isyType}-${isyID}`));
+    // this.log('variable by type and id: ', `${isyType}-${isyID}`);
+    // this.log(this.variableNames.get(`${isyType}-${isyID}`));
 
     var variable = new ISYMakerVariable(isyType, isyID, this.variableNames.get(`${isyType}-${isyID}`));
-    this.log('variable', variable);
+    // this.log('variable', variable);
     if (!variable.ID) return;
 
     var accessory = this.accessories.get(variable.UUID);
-    this.log('accessory', accessory);
+    // this.log('accessory', accessory);
     if (!accessory) return;
 
-    var value = Number.parseInt(isyValue, 10);
+    var characteristic = accessory.getService(Service[variable.serviceType])
+                                  .getCharacteristic(Characteristic[variable.characteristicType]);
+    if (!characteristic) return;
 
-    console.log(accessory, value);
-    accessory.getService(Service[variable.serviceType])
-             .getCharacteristic(Characteristic[variable.characteristicType])
-             .updateValue(value, null, 'Update from detected change on ISY');
+    var newValue = Number.parseInt(isyValue, 10),
+        oldValue = Number.parseInt(characteristic.value, 10);
+    if (newValue == oldValue) return;
+
+    characteristic.setValue(newValue, null, '_websocket');
   });
 }
 
@@ -351,7 +351,7 @@ ISYMakerVariable.prototype.getValue = function(callback) {
   var url = `${platform.url}/rest/vars/get/${this.isyType}/${this.isyID}`;
   request(url, function(error, response, body) {
     var value = Number.parseInt(body.split(/<val>|<\/val>/)[1], 10);
-    console.log(url, value);
+    // console.log(url, value);
     callback(null, value);
   });
 }
@@ -401,12 +401,11 @@ ISYMakerVariable.updateList = function(currentVariables, callback) {
 
 
 // Runs periodically, triggers discover to set up accessories when ISY variable name changes are detected 
-ISYMakerVariable.watch = function(currentVariables, refresh, callback, lastCheck = '') {
+ISYMakerVariable.watch = function(currentVariables, callback, lastCheck = '') {
   this.check(thisCheck => {
 
-    // If no change, exit
+    // If no change, do nothing
     if (thisCheck == lastCheck) {
-      platform.log("No change, skipping scan of ISY variables. Will check again in %s seconds", refresh / 1000);
 
     // Else, take note of the variable names and do something with these variables!
     } else {
@@ -417,8 +416,8 @@ ISYMakerVariable.watch = function(currentVariables, refresh, callback, lastCheck
       this.updateList(currentVariables, (newVariables, oldVariables) => callback(newVariables, oldVariables));
     }
 
-    // Rerun this method after waiting for refresh time
-    setTimeout(this.watch.bind(this, currentVariables, refresh, callback, lastCheck), refresh);
+    // Rerun this method after waiting for 10 seconds
+    setTimeout(this.watch.bind(this, currentVariables, callback, lastCheck), 10000);
   
   });
 }
