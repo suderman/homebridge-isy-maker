@@ -16,15 +16,15 @@
 - ### Lightbulb
   `hb.MY_CHANDELIER.Lightbulb.On`
 
-- ### Dimmable Lightbulb
-  `hb.MY_SCONCE.Lightbulb.On`
-  `hb.MY_SCONCE.Lightbulb.Brightness`
+- ### Dimmable Lightbulb  
+  `hb.MY_SCONCE.Lightbulb.On`  
+  `hb.MY_SCONCE.Lightbulb.Brightness`  
 
 - ### Colour Lightbulb
-  `hb.MY_LAMP.Lightbulb.On`
-  `hb.MY_LAMP.Lightbulb.Brightness`
-  `hb.MY_LAMP.Lightbulb.Hue`
-  `hb.MY_LAMP.Lightbulb.Saturation`
+  `hb.MY_LAMP.Lightbulb.On`  
+  `hb.MY_LAMP.Lightbulb.Brightness`  
+  `hb.MY_LAMP.Lightbulb.Hue`  
+  `hb.MY_LAMP.Lightbulb.Saturation`  
 
 ## Sensors
 
