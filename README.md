@@ -2,11 +2,11 @@
 
 Homebridge platform plugin to make virtual accessories as defined by [ISY-994i](https://www.universal-devices.com/residential/isy994i-series/) variables.   
 
-[![](http://i.giphy.com/3o7TKDKsVFfMjsbo0o.gif)](https://media.giphy.com/media/3oz8xWHxeXd6wWeczC/source.gif)
+[![](http://i.imgur.com/DHx1xFL.gif)](https://media.giphy.com/media/3oz8xWHxeXd6wWeczC/source.gif)
 
 This plugin is intended to compliment the excellent [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) plugin by [rodtoll](https://github.com/rodtoll). While [homebridge-isy-js](https://github.com/rodtoll/homebridge-isy-js) helps HomeKit understand your ISY-controlled Insteon & Z-Wave devices, there are situations where it'd be desirable to trigger an ISY program or Network Resource as well. 
 
-For example: I have a TV that recieves infrared ON/OFF commands from my [iTach WF2IR](http://www.globalcache.com/products/itach/wf2irspecs/), which is controlled by my ISY via [Network Resources](https://wiki.universal-devices.com/index.php?title=ISY-994i_Series_INSTEON:Networking#Network_Resources). I can create an ISY program that runs an ON or OFF Network Resource, triggered whenever an ISY state variable's value is modified. And if I name this state variable in a special way (detailed below), this Homebridge plugin will make a virtual accessory available to HomeKit!
+For example: I have a TV that receives infrared ON/OFF commands from my [iTach WF2IR](http://www.globalcache.com/products/itach/wf2irspecs/), which is controlled by my ISY via [Network Resources](https://wiki.universal-devices.com/index.php?title=ISY-994i_Series_INSTEON:Networking#Network_Resources). I can create an ISY program that runs an ON or OFF Network Resource, triggered whenever an ISY state variable's value is modified. And if I name this state variable in a special way (detailed below), this Homebridge plugin will make a virtual accessory available to HomeKit!
 
 ## Installation
 
