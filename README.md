@@ -104,11 +104,11 @@ This isn't an exhaustive list of HomeKit accessories (that list would be found [
   `hb.My_Thermometer.TemperatureSensor.CurrentTemperature`
 
 - #### Thermostat
-  `hb.My_Thermostat.TemperatureSensor.CurrentTemperature`  
-  `hb.My_Thermostat.TemperatureSensor.TargetTemperature`  
-  `hb.My_Thermostat.TemperatureSensor.CurrentHeatingCoolingState`  
-  `hb.My_Thermostat.TemperatureSensor.TargetHeatingCoolingState`  
-  `hb.My_Thermostat.TemperatureSensor.TemperatureDisplayUnits`  
+  `hb.My_Thermostat.Thermostat.CurrentTemperature`  
+  `hb.My_Thermostat.Thermostat.TargetTemperature`  
+  `hb.My_Thermostat.Thermostat.CurrentHeatingCoolingState`  
+  `hb.My_Thermostat.Thermostat.TargetHeatingCoolingState`  
+  `hb.My_Thermostat.Thermostat.TemperatureDisplayUnits`  
 
 ### Audio
 
