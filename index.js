@@ -258,8 +258,17 @@ ISYMaker.prototype.initializeWebSocket = function() {
     if (!event.data.includes('</var>')) return; 
 
     var isyType, isyID, isyValue = false;
-    [, isyType, isyID, isyValue ] = event.data.split(/type="|" id="|"><val>|<\/val>/);
-    this.log('WebSocket: ', isyType, isyID, isyValue);
+
+    // ISY 5.x
+    if (event.data.includes('<prec>')) {
+      [, isyType, isyID, , isyValue ] = event.data.split(/type="|" id="|"><prec>|<val>|<\/val>/);
+
+    // ISY 4.x
+    } else {
+      [, isyType, isyID, isyValue ] = event.data.split(/type="|" id="|"><val>|<\/val>/);
+    }
+
+    this.log('WebSocket => type: ', isyType, ' id: ', isyID, ' value: ', isyValue);
 
     // this.log('variable by type and id: ', `${isyType}-${isyID}`);
     // this.log(this.variableNames.get(`${isyType}-${isyID}`));
@@ -362,7 +371,16 @@ ISYMakerVariable.updateList = function(currentVariables, callback) {
     var isyID, isyName = false;
 
     xml.split('<e').forEach(entry => { 
-      [, isyID, isyName ] = entry.split(/ id="|" name="|" \/>/);
+
+      // ISY 5.x
+      if (event.data.includes('id="prec"')) {
+        [, isyID, isyName ] = entry.split(/ id="|" name="|"><val|" \/>/);
+
+      // ISY 4.x
+      } else {
+        [, isyID, isyName ] = entry.split(/ id="|" name="|" \/>/);
+      }        
+
       if ((!isyType) || (!isyID) || (!isyName)) return;
 
       var variable = new ISYMakerVariable(isyType, isyID, isyName);
