@@ -1,6 +1,6 @@
 {
   "name": "homebridge-isy-maker",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Homebridge platform plugin to make virtual accessories as defined by ISY-994i variables.",
   "author": "suderman",
   "license": "ISC",
