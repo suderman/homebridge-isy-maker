@@ -174,6 +174,17 @@ ISYMaker.prototype.configureCharacteristics = function(characteristics = []) {
     // Setter and getter
     characteristic.on('set', variable.setValue.bind(variable));
     characteristic.on('get', variable.getValue.bind(variable));
+    
+    // characteristic.on('set', (value, callback) => {
+    //   if (value == true) value = 1;
+    //   if (value == false) value = 0;
+    //   this.log('on set:', value, variable);
+    //   variable.setValue(value, callback)
+    // });
+    // characteristic.on('get', (callback) => {
+    //   this.log('on get:', variable);
+    //   variable.getValue(callback)
+    // });
 
     // Custom props
     characteristic.setProps(variable.props);
@@ -346,6 +357,8 @@ function ISYMakerVariable(isyType = 0, isyID = 0, isyName = '') {
 
 // Set ISY variable
 ISYMakerVariable.prototype.setValue = function(value, callback) {
+  if (value == true) value = 1;
+  if (value == false) value = 0;
   var url = `${platform.url}/rest/vars/set/${this.isyType}/${this.isyID}/${value}`;
   request(url, function(error, response, body) {
     callback(null);
