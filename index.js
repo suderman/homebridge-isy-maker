@@ -373,7 +373,7 @@ ISYMakerVariable.updateList = function(currentVariables, callback) {
     xml.split('<e').forEach(entry => { 
 
       // ISY 5.x
-      if (event.data.includes('id="prec"')) {
+      if (xml.includes('id="prec"')) {
         [, isyID, isyName ] = entry.split(/ id="|" name="|"><val|" \/>/);
 
       // ISY 4.x
